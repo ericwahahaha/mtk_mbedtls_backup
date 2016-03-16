@@ -30,10 +30,17 @@
 #include "mbedtls\error.h"
 #include "mbedtls\debug.h"
 #include "mbedtls\timing.h"
-#include "mbedtls\mtk.h"
+//#include "mbedtls\mtk.h"
 
 #include <Arduino.h>
 #include <vmsock.h>
+
+
+//IJLiao added
+extern const char* CONNECT_IP_ADDRESS;
+extern VMINT CONNECT_PORT;
+int ret_connect = -1;
+
 
 
 #define C_ADDRESS CONNECT_IP_ADDRESS

@@ -129,13 +129,13 @@ void mbedtls_net_init( mbedtls_net_context *ctx )
 /*
  * Initiate a TCP connection with host:port and the given protocol
  */
-/*
+
 int mbedtls_net_connect( mbedtls_net_context *ctx, const char *host, const char *port, int proto )
 {
     int ret;
     struct addrinfo hints, *addr_list, *cur;
 
-    if( ( ret = net_prepare() ) != 0 )
+/*    if( ( ret = net_prepare() ) != 0 )
         return( ret );
 
     // Do name resolution with both IPv6 and IPv4 
@@ -169,11 +169,11 @@ int mbedtls_net_connect( mbedtls_net_context *ctx, const char *host, const char 
         ret = MBEDTLS_ERR_NET_CONNECT_FAILED;
     }
 
-    freeaddrinfo( addr_list );
+    freeaddrinfo( addr_list );*/
 
     return( ret );
 }
-*/
+
 
 /*
  * Create a listening socket on bind_ip:port

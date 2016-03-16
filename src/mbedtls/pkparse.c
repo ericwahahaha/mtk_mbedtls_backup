@@ -22,7 +22,7 @@
 #include "vmio.h"
 #include "vmstdlib.h"
 #include <vmchset.h>
-#include "mtk.h"
+//#include "mtk.h"
 #define VM_IS_SUCCEEDED(x) (((x)>=0)?VM_TRUE:VM_FALSE)    /* Use this macro to determine if a VM_RESULT is a success or not. */
 #define SSL_CERT_PATH_MAX_LENGTH 100
 #define SSL_EXTERNAL_CERT_NUMBER    1

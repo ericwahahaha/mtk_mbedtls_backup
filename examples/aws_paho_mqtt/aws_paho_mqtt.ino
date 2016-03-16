@@ -39,9 +39,10 @@
 
 
 // IJLiao Add Here
-extern VMINT g_bearer_hdl;
-extern const char* CONNECT_IP_ADDRESS;
-extern VMINT CONNECT_PORT;
+VMINT g_bearer_hdl;
+const char* CONNECT_IP_ADDRESS;
+VMINT CONNECT_PORT;
+
 
 
 /**
