@@ -141,7 +141,7 @@ int iot_tls_connect(Network *pNetwork, TLSConnectParams params) {
 	char portBuffer[6];
 	sprintf(portBuffer, "%d", params.DestinationPort); DEBUG("  . Connecting to %s/%s...", params.pDestinationURL, portBuffer);
 
-	Serial.print("  . Connecting to server ");
+	/*Serial.print("  . Connecting to server ");
 	Serial.print(C_ADDRESS);
 	Serial.print("/");
 	Serial.print(C_PORT);
@@ -173,7 +173,8 @@ int iot_tls_connect(Network *pNetwork, TLSConnectParams params) {
         return ret;
     }
 
-    Serial.println("ok");
+    Serial.println("ok");*/
+	ret = mbedtls_net_connect(&server_fd, params.pDestinationURL, portBuffer, MBEDTLS_NET_PROTO_TCP);
 	// if ((ret = mbedtls_net_connect(&server_fd, params.pDestinationURL, portBuffer, MBEDTLS_NET_PROTO_TCP)) != 0) {
 	// 	ERROR(" failed\n  ! mbedtls_net_connect returned -0x%x\n\n", -ret);
 	// 	return ret;

@@ -24,6 +24,7 @@
 #include "vmio.h"
 #include "vmstdlib.h"
 #include <vmchset.h>
+#include "mtk/mtknet.h"
 
 #ifndef MBEDTLS_NET_H
 #define MBEDTLS_NET_H

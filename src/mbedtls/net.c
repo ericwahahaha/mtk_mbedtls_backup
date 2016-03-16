@@ -19,9 +19,7 @@
  *  This file is part of mbed TLS (https://tls.mbed.org)
  */
 
-#include <Arduino.h>
-#include <arduino.h>
-#include "Arduino.h"
+
 
 #if !defined(MBEDTLS_CONFIG_FILE)
 #include "config.h"
@@ -79,6 +77,8 @@ static int wsa_init_done = 0;
 
 #endif /* ( _WIN32 || _WIN32_WCE ) && !EFIX64 && !EFI32 */
 
+#include <Arduino.h>
+
 /* Some MS functions want int and MSVC warns if we pass size_t,
  * but the standard fucntions use socklen_t, so cast only for MSVC */
 #if defined(_MSC_VER)
@@ -134,6 +134,46 @@ int mbedtls_net_connect( mbedtls_net_context *ctx, const char *host, const char 
 {
     int ret;
     struct addrinfo hints, *addr_list, *cur;
+
+	ret = mtk_net_tcp(&ctx->fd);
+
+/*	Serial.println("ok");
+	char portBuffer[6];
+	sprintf(portBuffer, "%d", params.DestinationPort); DEBUG("  . Connecting to %s/%s...", params.pDestinationURL, portBuffer);
+
+	Serial.print("  . Connecting to server ");
+	Serial.print(C_ADDRESS);
+	Serial.print("/");
+	Serial.print(C_PORT);
+	Serial.print("...");
+	//Serial.print("going to connect in mbedtls");
+	t_addr_in.sin_family = PF_INET;  //IPv4
+	t_addr_in.sin_addr.S_un.s_addr = inet_addr(C_ADDRESS);
+	t_addr_in.sin_port = htons(C_PORT);
+
+	t_ai_socktype = SOCK_STREAM;
+	//t_ai_protocol = proto == MBEDTLS_NET_PROTO_UDP ? VM_UDP : VM_TCP;
+	t_ai_protocol = 0;
+	t_ai_addrlen = sizeof(SOCKADDR);
+	server_fd.fd = (int)vm_socket(t_addr_in.sin_family, t_ai_socktype, t_ai_protocol);
+	if (server_fd.fd < 0)
+	{
+		ret_connect = MBEDTLS_ERR_NET_SOCKET_FAILED;
+		Serial.print("vm_socket error and ret value is ");
+		Serial.println(server_fd.fd);
+		return ret;
+	}
+
+	ret = vm_connect(server_fd.fd, (SOCKADDR*)&t_addr_in, sizeof(SOCKADDR));
+
+	if (ret != 0){
+		ret_connect = MBEDTLS_ERR_NET_CONNECT_FAILED;
+		Serial.print("vm_connect error and ret value is ");
+		Serial.println(ret);
+		return ret;
+	}
+
+	Serial.println("ok");
 
 /*    if( ( ret = net_prepare() ) != 0 )
         return( ret );
