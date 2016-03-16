@@ -43,6 +43,11 @@
 
 #define  TEMP_EN    0
 
+// IJLiao Add Here
+extern VMINT g_bearer_hdl;
+extern const char* CONNECT_IP_ADDRESS;
+extern VMINT CONNECT_PORT;
+
 /* temperature example by using analogRead to read sensor data */
 #if TEMP_EN
 const int B=4275;                 // B value of the thermistor

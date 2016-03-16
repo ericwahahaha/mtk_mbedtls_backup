@@ -37,6 +37,13 @@
 #include <LWiFiClient.h>
 #include <LGPRS.h>
 
+
+// IJLiao Add Here
+extern VMINT g_bearer_hdl;
+extern const char* CONNECT_IP_ADDRESS;
+extern VMINT CONNECT_PORT;
+
+
 /**
  * @brief Default MQTT HOST URL is pulled from the aws_iot_config.h
  */
