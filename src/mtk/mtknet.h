@@ -5,6 +5,9 @@
 #include <vmsock.h>
 
 
+#include <signal.h>
+
+
 #ifndef MTKNET_H
 #define MTKNET_H
 
@@ -14,7 +17,7 @@
 #define EXTERNC
 #endif
 
-EXTERNC int mtk_net_tcp(int* mtk_server_fd);
+EXTERNC int mtk_net_tcp(int* mtk_server_fd, const char *mtk_host, const char *mtk_port, int mtk_proto);
 
 #undef EXTERNC
 
