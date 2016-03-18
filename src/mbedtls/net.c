@@ -135,7 +135,7 @@ int mbedtls_net_connect( mbedtls_net_context *ctx, const char *host, const char 
     int ret;
     struct addrinfo hints, *addr_list, *cur;
 
-	ret = mtk_net_tcp(&ctx->fd);
+	ret = mtk_net_tcp(&ctx->fd, host, port, proto);
 
 /*	Serial.println("ok");
 	char portBuffer[6];
