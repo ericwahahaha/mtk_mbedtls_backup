@@ -29,7 +29,7 @@ int dns_server_count = 0;
 //void ngethostbyname (unsigned char* , int);
 void ChangetoDnsNameFormat (unsigned char*,unsigned char*);
 unsigned char* ReadName (unsigned char*,unsigned char*,int*);
-void get_dns_servers();
+
  
 //DNS header structure
 struct DNS_HEADER
@@ -107,7 +107,7 @@ typedef struct
 /*
  * Perform a DNS query by sending a packet
  * */
-int ngethostbyname(unsigned char *host , int query_type)
+int ngethostbyname(unsigned char *host, int query_type, IN_ADDR *target_addr)
 {
     unsigned char buf[65536],*qname,*reader;
     int i , j , stop , s, ret;
@@ -158,6 +158,8 @@ int ngethostbyname(unsigned char *host , int query_type)
 		Serial.println(s);
 		return 0;
 	}
+	Serial.print("vm_socket fd value is ");
+	Serial.println(s);
 
 	ret = vm_connect(s, (SOCKADDR*)&dest, sizeof(SOCKADDR));
 
@@ -313,7 +315,7 @@ int ngethostbyname(unsigned char *host , int query_type)
 	Serial.print("Answer Records : ");
 	Serial.println(ntohs(dns->ans_count));
     printf("\nAnswer Records : %d \n" , ntohs(dns->ans_count) );
-   /* for(i=0 ; i < ntohs(dns->ans_count) ; i++)
+    for(i=0 ; i < ntohs(dns->ans_count) ; i++)
     {
 		Serial.print("Name : ");
 		Serial.print((const char*)answers[i].name);
@@ -327,6 +329,8 @@ int ngethostbyname(unsigned char *host , int query_type)
             printf("has IPv4 address : %s",inet_ntoa(a.sin_addr));
 			Serial.print("has IPv4 address : ");
 			Serial.println(inet_ntoa(a.sin_addr));
+			*target_addr = a.sin_addr;
+			break;
         }
          
         if(ntohs(answers[i].resource->type)==5) 
@@ -336,9 +340,9 @@ int ngethostbyname(unsigned char *host , int query_type)
         }
  
         printf("\n");
-    }*/
+    }
  
-    //print authorities
+ /*   //print authorities
     printf("\nAuthoritive Records : %d \n" , ntohs(dns->auth_count) );
     for( i=0 ; i < ntohs(dns->auth_count) ; i++)
     {
@@ -364,7 +368,7 @@ int ngethostbyname(unsigned char *host , int query_type)
             printf("has IPv4 address : %s",inet_ntoa(a.sin_addr));
         }
         printf("\n");
-    }
+    }*/
 
 	ret = vm_shutdown(s, VM_SHUT_RDWR);
 
@@ -430,37 +434,7 @@ u_char* ReadName(unsigned char* reader,unsigned char* buffer,int* count)
     return name;
 }
  
-/*
- * Get the DNS servers from /etc/resolv.conf file on Linux
- * */
-void get_dns_servers()
-{
-    FILE *fp;
-    char line[200] , *p;
-    if((fp = fopen("/etc/resolv.conf" , "r")) == NULL)
-    {
-        printf("Failed opening /etc/resolv.conf file \n");
-    }
-     
-    while(fgets(line , 200 , fp))
-    {
-        if(line[0] == '#')
-        {
-            continue;
-        }
-        if(strncmp(line , "nameserver" , 10) == 0)
-        {
-            p = strtok(line , " ");
-            p = strtok(NULL , " ");
-             
-            //p now is the dns ip :)
-            //????
-        }
-    }
-     
-    strcpy(dns_servers[0] , "208.67.222.222");
-    strcpy(dns_servers[1] , "208.67.220.220");
-}
+
  
 /*
  * This will convert www.google.com to 3www6google3com 

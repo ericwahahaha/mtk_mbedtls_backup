@@ -10,7 +10,7 @@
 #include <vmchset.h>
 
 
-int ngethostbyname(unsigned char *host, int query_type);
+int ngethostbyname(unsigned char *host, int query_type, IN_ADDR *target_addr);
 
 
 
