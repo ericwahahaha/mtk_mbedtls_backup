@@ -20,8 +20,10 @@
  #ifndef SRC_LINKIT_AWS_HEADER_H_
  #define SRC_LINKIT_AWS_HEADER_H_
 
+ #include "azure_iot_hub/httpapi.h"
+ #include "azure_iot_hub/iot_logging.h"
+
  #include "mbedtls\net.h"
-// #include "mbedtls\mtk.h"
 
  #include "aws_iot_lib\aws_iot_mqtt_interface.h"
  #include "aws_iot_lib\aws_iot_version.h"
