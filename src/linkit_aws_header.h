@@ -23,13 +23,15 @@
  #include "azure_iot_hub/httpapi.h"
  #include "azure_iot_hub/iot_logging.h"
 
- #include "mbedtls\net.h"
+ #include "mbedtls/net.h"
+ #include "mtk/NTPClient.h"
+#include "mtk/tlsconnection.h"
 
- #include "aws_iot_lib\aws_iot_mqtt_interface.h"
- #include "aws_iot_lib\aws_iot_version.h"
- #include "aws_iot_lib\aws_iot_shadow_interface.h"
- #include "aws_iot_lib\aws_iot_shadow_json_data.h"
- #include "aws_iot_lib\aws_iot_json_utils.h"
- #include "aws_iot_lib\aws_iot_log.h"
+ #include "aws_iot_lib/aws_iot_mqtt_interface.h"
+ #include "aws_iot_lib/aws_iot_version.h"
+ #include "aws_iot_lib/aws_iot_shadow_interface.h"
+ #include "aws_iot_lib/aws_iot_shadow_json_data.h"
+ #include "aws_iot_lib/aws_iot_json_utils.h"
+ #include "aws_iot_lib/aws_iot_log.h"
 
 #endif /* SRC_LINKIT_AWS_HEADER_H_ */
