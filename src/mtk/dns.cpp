@@ -109,8 +109,9 @@ typedef struct
  * */
 int ngethostbyname(unsigned char *host, int query_type, IN_ADDR *target_addr)
 {
-    unsigned char buf[65536],*qname,*reader;
+    unsigned char buf[65536],*qname,*reader, *temp_char_pos;
     int i , j , stop , s, ret;
+	unsigned short *q_type;
  
 	SOCKADDR_IN a = { 0 };
 	VMINT port = 53;
@@ -193,27 +194,45 @@ int ngethostbyname(unsigned char *host, int query_type, IN_ADDR *target_addr)
     qname =(unsigned char*)&buf[sizeof(struct DNS_HEADER)];
  
     ChangetoDnsNameFormat(qname , host);
-    qinfo =(struct QUESTION*)&buf[sizeof(struct DNS_HEADER) + (strlen((const char*)qname) + 1)]; //fill it
+	Serial.println(sizeof(struct DNS_HEADER));
+	Serial.println(strlen((const char*)qname));
+    //qinfo =(struct QUESTION*)&buf[sizeof(struct DNS_HEADER) + (strlen((const char*)qname) + 1)]; //fill it
+	/*temp_char_pos = &buf[sizeof(struct DNS_HEADER) + (strlen((const char*)qname) + 1)];
+	qinfo = (struct QUESTION*)temp_char_pos;
  
     qinfo->qtype = htons( query_type ); //type of the query , A , MX , CNAME , NS etc
     qinfo->qclass = htons(1); //its internet (lol)
+	Serial.println(qinfo->qtype);
+	Serial.println(qinfo->qclass);*/
+	
+	// Enforce byte format cause pointer will shift when qname length is odd
+	buf[sizeof(struct DNS_HEADER) + (strlen((const char*)qname) + 1)] =0x00;
+	buf[sizeof(struct DNS_HEADER) + (strlen((const char*)qname) + 2)] =0x01;
+	buf[sizeof(struct DNS_HEADER) + (strlen((const char*)qname) + 3)] =0x00;
+	buf[sizeof(struct DNS_HEADER) + (strlen((const char*)qname) + 4)] =0x01;
+
+
+	Serial.println(buf[sizeof(struct DNS_HEADER) + (strlen((const char*)qname) + 1)]);
+	Serial.println(buf[sizeof(struct DNS_HEADER) + (strlen((const char*)qname) + 2)]);
+	Serial.println(buf[sizeof(struct DNS_HEADER) + (strlen((const char*)qname) + 3)]);
+	Serial.println(buf[sizeof(struct DNS_HEADER) + (strlen((const char*)qname) + 4)]);
+//	Serial.println(buf[sizeof(struct DNS_HEADER) + (strlen((const char*)qname) + 6)]);
  
 
 	Serial.print("Sending Packet...");
+
     printf("\nSending Packet...");
 	if (vm_sendto(s, (char*)buf, sizeof(struct DNS_HEADER) + (strlen((const char*)qname) + 1) + sizeof(struct QUESTION), 0, (struct sockaddr*)&dest, sizeof(dest)) < 0)
     {
 		Serial.println("failed");
         perror("sendto failed");
     }
-	Serial.println("Done");
-    printf("Done");
-     
+    
     //Receive the answer
     i = sizeof dest;
 	Serial.print("Receiving answer...");
     printf("\nReceiving answer...");
-	if (vm_recv(s, (char*)buf, 65536, 0) < 0)
+	if (vm_recvfrom(s, (char*)buf, 65536, 0, (struct sockaddr*)&dest, &i ) < 0)
     {
 		Serial.println("failed");
         perror("recvfrom failed");
@@ -342,7 +361,7 @@ int ngethostbyname(unsigned char *host, int query_type, IN_ADDR *target_addr)
         printf("\n");
     }
  
- /*   //print authorities
+   //print authorities
     printf("\nAuthoritive Records : %d \n" , ntohs(dns->auth_count) );
     for( i=0 ; i < ntohs(dns->auth_count) ; i++)
     {
@@ -368,7 +387,7 @@ int ngethostbyname(unsigned char *host, int query_type, IN_ADDR *target_addr)
             printf("has IPv4 address : %s",inet_ntoa(a.sin_addr));
         }
         printf("\n");
-    }*/
+    }
 
 	ret = vm_shutdown(s, VM_SHUT_RDWR);
 

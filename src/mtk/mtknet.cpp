@@ -22,10 +22,10 @@ boolean dns_resolve_status = false;
 int mtk_net_tcp(int* mtk_server_fd, const char *mtk_host, const char *mtk_port, int mtk_proto)
 {
 
-	SOCKADDR_IN       t_addr_in = { 0 };
-	int               t_ai_socktype;   /* Socket type. */
-	int               t_ai_protocol;   /* Protocol of socket. */
-	uint32_t          t_ai_addrlen;    /* Length of socket address. */
+	SOCKADDR_IN       dest_addr_in = { 0 };
+	int               dest_socktype;   /* Socket type. */
+	int               dest_protocol;   /* Protocol of socket. */
+	uint32_t          dest_addrlen;    /* Length of socket address. */
 
 	int ret_connect = -1;
 	int ret = -1;
@@ -53,15 +53,15 @@ int mtk_net_tcp(int* mtk_server_fd, const char *mtk_host, const char *mtk_port, 
 	Serial.print(mtk_port);
 	Serial.println("...");
 	//Serial.print("going to connect in mbedtls");
-	t_addr_in.sin_family = PF_INET;  //IPv4
-	t_addr_in.sin_addr.S_un.s_addr = inet_addr(inet_ntoa(mtk_addr));
-	t_addr_in.sin_port = htons(C_PORT);
+	dest_addr_in.sin_family = PF_INET;  //IPv4
+	dest_addr_in.sin_addr.S_un.s_addr = inet_addr(inet_ntoa(mtk_addr));
+	dest_addr_in.sin_port = htons(atoi(mtk_port));
 
-	t_ai_socktype = SOCK_STREAM;
+	dest_socktype = SOCK_STREAM;
 	//t_ai_protocol = proto == MBEDTLS_NET_PROTO_UDP ? VM_UDP : VM_TCP;
-	t_ai_protocol = 0;
-	t_ai_addrlen = sizeof(SOCKADDR);
-	*mtk_server_fd = (int)vm_socket(t_addr_in.sin_family, t_ai_socktype, t_ai_protocol);
+	dest_protocol = 0;
+	dest_addrlen = sizeof(SOCKADDR);
+	*mtk_server_fd = (int)vm_socket(dest_addr_in.sin_family, dest_socktype, dest_protocol);
 	if (*mtk_server_fd < 0)
 	{
 //		ret_connect = MBEDTLS_ERR_NET_SOCKET_FAILED;
@@ -72,7 +72,7 @@ int mtk_net_tcp(int* mtk_server_fd, const char *mtk_host, const char *mtk_port, 
 	Serial.print("mtk vm_socket fd value is ");
 	Serial.println(*mtk_server_fd);
 
-	ret = vm_connect(*mtk_server_fd, (SOCKADDR*)&t_addr_in, sizeof(SOCKADDR));
+	ret = vm_connect(*mtk_server_fd, (SOCKADDR*)&dest_addr_in, sizeof(SOCKADDR));
 
 	if (ret != 0){
 //		ret_connect = MBEDTLS_ERR_NET_CONNECT_FAILED;
