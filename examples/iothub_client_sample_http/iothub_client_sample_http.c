@@ -10,7 +10,7 @@
    and removing calls to _DoWork will yield the same results. */
 
 #ifdef ARDUINO
-#include "AzureIoT.h"
+#include "linkit_azure_header.h"
 #else
 #include "iothub_client_ll.h"
 #include "iothub_message.h"

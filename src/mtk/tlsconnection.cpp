@@ -18,20 +18,14 @@
 
 
 #include "tlsconnection.h"
-#include "mbedtls\config.h"
-#include "mbedtls\net.h"
-#include "mbedtls\ssl.h"
-#include "mbedtls\entropy.h"
-#include "mbedtls\ctr_drbg.h"
-#include "mbedtls\certs.h"
-#include "mbedtls\x509.h"
-#include "mbedtls\error.h"
-#include "mbedtls\debug.h"
-#include "mbedtls\timing.h"
+
 
 #include <Arduino.h>
 #include <vmsock.h>
 
+TLSConnection::TLSConnection()
+{
+}
 
 
 /*
@@ -40,33 +34,24 @@
 
 static int myCertVerify(void *data, mbedtls_x509_crt *crt, int depth, uint32_t *flags) {
 	char buf[1024];
-	((void) data);
+	((void)data);
 
 //	DEBUG("\nVerify requested for (Depth %d):\n", depth);
-	mbedtls_x509_crt_info(buf, sizeof(buf) - 1, "", crt);
+	mbedtls_x509_crt_info(buf, sizeof(buf)-1, "", crt);
 //	DEBUG("%s", buf);
 
 	if ((*flags) == 0) {
 //		DEBUG("  This certificate has no flags\n");
-	} else {
+	}
+	else {
 //		DEBUG(buf, sizeof(buf), "  ! ", *flags); DEBUG("%s\n", buf);
 	}
 
 	return (0);
 }
 
-static int ret = 0, i;
-static mbedtls_entropy_context entropy;
-static mbedtls_ctr_drbg_context ctr_drbg;
-static mbedtls_ssl_context ssl;
-static mbedtls_ssl_config conf;
-static uint32_t flags;
-static mbedtls_x509_crt cacert;
-static mbedtls_x509_crt clicert;
-static mbedtls_pk_context pkey;
-static mbedtls_net_context server_fd;
 
-int mtk_tls_init(Network *pNetwork) {
+int TLSConnection::tls_init(void) {
 	int ret_val = 0;
 	const char *pers = "aws_iot_tls_wrapper";
 	unsigned char buf[MBEDTLS_SSL_MAX_CONTENT_LEN + 1];
@@ -87,16 +72,17 @@ int mtk_tls_init(Network *pNetwork) {
 		return ret;
 	} //DEBUG("ok\n");
 
-	pNetwork->my_socket = 0;
-	pNetwork->mqttread = mtk_tls_read;
-	pNetwork->mqttwrite = mtk_tls_write;
-	pNetwork->disconnect = mtk_tls_disconnect;
+//	server_fd.fd = 0;
+//	target_sock_fd = 0;
 
 	return ret_val;
 }
 
-int mtk_tls_connect(Network *pNetwork, TLSConnectParams params) {
+int TLSConnection::tls_connect(TLSConnectionInfoParams params) {
+	int tls_temp_counter = 0;
 	const char *pers = "aws_iot_tls_wrapper";
+	unsigned char print_buf[100];
+	const char *print_result = (const char *)print_buf;
 	unsigned char buf[MBEDTLS_SSL_MAX_CONTENT_LEN + 1];
 
 	Serial.print("  . Loading the CA root certificate ...");
@@ -184,12 +170,17 @@ int mtk_tls_connect(Network *pNetwork, TLSConnectParams params) {
 		if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
 			Serial.print("mbedtls_ssl_handshake failded and ret is ");
 			Serial.println(ret);
-			break;
 		}
 	}
 
 	Serial.println("ok");
 
+	print_result = mbedtls_ssl_get_version(&ssl);
+	Serial.print("mbedtls_ssl_get_version is ");
+	Serial.println(print_result);
+	print_result = mbedtls_ssl_get_ciphersuite(&ssl);
+	Serial.print("mbedtls_ssl_get_ciphersuite is ");
+	Serial.println(print_result);
 //	DEBUG(" ok\n    [ Protocol is %s ]\n    [ Ciphersuite is %s ]\n", mbedtls_ssl_get_version(&ssl), mbedtls_ssl_get_ciphersuite(&ssl));
 	if ((ret = mbedtls_ssl_get_record_expansion(&ssl)) >= 0) {
 //		DEBUG("    [ Record expansion is %d ]\n", ret);
@@ -214,16 +205,21 @@ int mtk_tls_connect(Network *pNetwork, TLSConnectParams params) {
 		ret = 0;
 	}
 
-	// if (mbedtls_ssl_get_peer_cert(&ssl) != NULL) {
-	// 	DEBUG("  . Peer certificate information    ...\n");
-	// 	mbedtls_x509_crt_info((char *) buf, sizeof(buf) - 1, "      ", mbedtls_ssl_get_peer_cert(&ssl));
-	// 	DEBUG("%s\n", buf);
-	// }
+	if (mbedtls_ssl_get_peer_cert(&ssl) != NULL) {
+		Serial.println("  . Peer certificate information    ...\n");
+	 	/*mbedtls_x509_crt_info((char *) buf, sizeof(buf) - 1, "      ", mbedtls_ssl_get_peer_cert(&ssl));
+		while (buf[tls_temp_counter] != '\n'){
+			Serial.print(buf[tls_temp_counter]);
+			tls_temp_counter++;
+		}*/
+		
+	}
 
 	return ret;
 }
 
-int mtk_tls_write(Network *pNetwork, unsigned char *pMsg, int len, int timeout_ms) {
+int TLSConnection::tls_write(unsigned char *pMsg, int len, int timeout_ms) 
+{
 
 	int written;
 	int frags;
@@ -240,7 +236,8 @@ int mtk_tls_write(Network *pNetwork, unsigned char *pMsg, int len, int timeout_m
 	return written;
 }
 
-int mtk_tls_read(Network *pNetwork, unsigned char *pMsg, int len, int timeout_ms) {
+int TLSConnection::tls_read(unsigned char *pMsg, int len, int timeout_ms) 
+{
 	int rxLen = 0;
 	bool isErrorFlag = false;
 	bool isCompleteFlag = false;
@@ -263,13 +260,13 @@ int mtk_tls_read(Network *pNetwork, unsigned char *pMsg, int len, int timeout_ms
 	return ret;
 }
 
-void mtk_tls_disconnect(Network *pNetwork) {
+void TLSConnection::tls_disconnect(void) {
 	do {
 		ret = mbedtls_ssl_close_notify(&ssl);
 	} while (ret == MBEDTLS_ERR_SSL_WANT_WRITE);
 }
 
-int mtk_tls_destroy(Network *pNetwork) {
+int TLSConnection::tls_destroy(void) {
 
 	mbedtls_net_free(&server_fd);
 
@@ -281,5 +278,14 @@ int mtk_tls_destroy(Network *pNetwork) {
 	mbedtls_ctr_drbg_free(&ctr_drbg);
 	mbedtls_entropy_free(&entropy);
 
+	return 0;
+}
+
+int TLSConnection::available()
+{
+
+	if (server_fd.fd > 0) {
+		return 1;
+	}
 	return 0;
 }

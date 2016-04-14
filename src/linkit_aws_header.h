@@ -24,9 +24,11 @@
  #include "azure_iot_hub/iot_logging.h"
 
  #include "mbedtls/net.h"
+ #include "mtk/HTTPSClient.h"
  #include "mtk/NTPClient.h"
-#include "mtk/tlsconnection.h"
+ //#include "mtk/tlsconnection.h"
 
+ #include "aws_iot_lib/network_interface.h"
  #include "aws_iot_lib/aws_iot_mqtt_interface.h"
  #include "aws_iot_lib/aws_iot_version.h"
  #include "aws_iot_lib/aws_iot_shadow_interface.h"

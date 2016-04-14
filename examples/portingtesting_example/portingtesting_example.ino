@@ -21,11 +21,14 @@
 #include <LWiFiClient.h>
 #include <LWiFiUdp.h>
 #include <LTask.h>
+#include <LDateTime.h>
+
+#include <time.h>
 
 #include "linkit_aws_header.h"
 
-char ssid[] = "I_Got_WIFI";  //  your network SSID (name)
-char pass[] = "61399316";       // your network password
+char ssid[] = "Home-WIFI";  //  your network SSID (name)
+char pass[] = "06191026";       // your network password
 
 unsigned int localPort = 2390;      // local port to listen for UDP packets
 
@@ -48,8 +51,22 @@ char cafileName[] = "msazure.pem";
 char clientCRTName[] = "8cbd725746-certificate.pem.crt";
 char clientKeyName[] = "8cbd725746-private.pem.key";
 
-Network mtk_tls_net_test;
-TLSConnectParams mtk_tls_test;
+/*unsigned char httpRequ[] = "GET / HTTP/1.1\r\nHost: A21DXA5BCPF81N.iot.us-west-2.amazonaws.com\r\nConnection: close\r\n\r\n";
+unsigned char recv_buff[1000];
+
+
+TLSConnection is_coming;
+TLSConnectionInfoParams mtk_tls_test;*/
+
+HTTPSClient httpsiscoming;
+
+struct tm* nowStruct;
+
+datetimeInfo linkit_time;
+unsigned int rtc;
+time_t for_test_rtc;
+time_t end_test_rtc;
+double diff_time_test;
 
 // invoked in main thread context
 void bearer_callback(VMINT handle, VMINT event, VMUINT data_account_id, void *user_data)
@@ -86,6 +103,97 @@ boolean bearer_open(void* ctx){
 boolean  tls_start(void* ctx)
 {
 	int ret_result = 0;
+	int temp_counter = 0;
+	String name_out, value_out;
+
+	unsigned char output[500];
+	const String header_in_1 = "Host: A21DXA5BCPF81N.iot.us-west-2.amazonaws.com";
+	const String header_in_2 = "Connection : close";
+	const String header_in_3 = "Host: testnthuiot.azure-devices.net";
+
+	ret_result = httpsiscoming.begin("testnthuiot.azure-devices.net", 443);
+	ret_result = httpsiscoming.sendRequest("GET", "/");
+	ret_result = httpsiscoming.sendHeader(header_in_1);
+//	ret_result = httpsiscoming.sendHeader(header_in_2);
+	ret_result = httpsiscoming.sendBody((const unsigned char *)"\r\n", 0);
+	Serial.println("Send result is : ");
+	Serial.println(ret_result);
+
+	ret_result = httpsiscoming.readStatus();
+	Serial.println(ret_result);
+
+	while (httpsiscoming.readHeader(name_out, value_out)){
+		Serial.print(name_out);
+		Serial.println(value_out);
+	}
+
+	ret_result = httpsiscoming.contentLength();
+	ret_result = httpsiscoming.readBody(output, ret_result + 1);
+
+	Serial.println((const char *)output);
+
+	delay(10000);
+	//-------------------------------------------------------------
+	ret_result = httpsiscoming.sendRequest("GET", "/");
+	ret_result = httpsiscoming.sendHeader(header_in_3);
+	ret_result = httpsiscoming.sendHeader(header_in_2);
+	ret_result = httpsiscoming.sendBody((const unsigned char *)"\r\n", 0);
+	Serial.println("Send result is : ");
+	Serial.println(ret_result);
+
+	ret_result = httpsiscoming.readStatus();
+	Serial.println(ret_result);
+
+	while (httpsiscoming.readHeader(name_out, value_out)){
+		Serial.print(name_out);
+		Serial.println(value_out);
+	}
+
+	ret_result = httpsiscoming.contentLength();
+	ret_result = httpsiscoming.readBody(output, ret_result + 1);
+
+	Serial.println((const char *)output);
+		
+
+
+	/*is_coming.net_key_info.pRootCALocation = cafileName;
+	is_coming.net_key_info.pDeviceCertLocation = clientCRTName;
+	is_coming.net_key_info.pDevicePrivateKeyLocation = clientKeyName;
+	is_coming.net_key_info.pDestinationURL = HostAddress;
+	is_coming.net_key_info.DestinationPort = port;
+	is_coming.net_key_info.timeout_ms = 5000;
+	is_coming.net_key_info.ServerVerificationFlag = true;
+	
+	Serial.println("\nStarting TLS connection ...");
+	ret_result = is_coming.tls_init();
+	Serial.print("\n mtk_tls_init return value is ...");
+	Serial.println(ret_result);
+	
+	ret_result = is_coming.tls_connect(is_coming.net_key_info);
+	Serial.print("\n mtk_tls_connect return value is ...");
+	Serial.println(ret_result);
+
+	ret_result = is_coming.tls_write(httpRequ, sizeof(httpRequ), 10000);
+	Serial.print("\n mtk_tls_write return value is ...");
+	Serial.println(ret_result);
+
+	while (temp_counter < 10000){
+		temp_counter++;
+	}
+	
+	ret_result = is_coming.tls_read(recv_buff, 1000, 10000);
+	Serial.print("\n mtk_tls_read return value is ...");
+	Serial.println(ret_result);
+	Serial.println((const char*)recv_buff);*/
+
+
+
+return true;
+}
+
+/*boolean  tls_start(void* ctx)
+{
+	int ret_result = 0;
 	mtk_tls_test.pRootCALocation = cafileName;
 	mtk_tls_test.pDeviceCertLocation = clientCRTName;
 	mtk_tls_test.pDevicePrivateKeyLocation = clientKeyName;
@@ -105,7 +213,7 @@ boolean  tls_start(void* ctx)
 
 
 	return true;
-}
+}*/
 
 void setup()
 {
@@ -133,8 +241,10 @@ void setup()
 
 /*  ret_result = LWiFi.hostByName((const char*)HostAddress, DNS_IPResult);
   Serial.print("\nDNS server resolving result is...");
-  Serial.println(DNS_IPResult);
-  Serial.println(ret_result);*/
+  Serial.println(strlen((const char *)httpRequ));
+  Serial.println(strlen((const char *)recv_buff));
+  strcpy((char *)recv_buff, (const char *)httpRequ);
+  Serial.println(strlen((const char *)recv_buff));*/
 
   Serial.println("\nStarting connection to server...");
   ret_result = Udp.begin();
@@ -154,8 +264,33 @@ void loop()
 
 	ntp_time_utc = Udp.getEpochTime("time.stdtime.gov.tw", 123, DEFAULT_NTP_TIMEOUT);
 	Serial.println(ntp_time_utc);
+
+
+
+	nowStruct = gmtime((const long int *)&ntp_time_utc);
+
+
+	linkit_time.year = nowStruct->tm_year + 1900;
+	linkit_time.mon = nowStruct->tm_mon + 1;
+	linkit_time.day = nowStruct->tm_mday;
+	linkit_time.hour = nowStruct->tm_hour;
+	linkit_time.min = nowStruct->tm_min;
+	linkit_time.sec = nowStruct->tm_sec;
+
+	LDateTime.setTime(&linkit_time);
+	LDateTime.getRtc(&rtc);
+	Serial.println(rtc);
+	for_test_rtc = (const long int )rtc;
+	Serial.println(ctime((const long int *)&rtc));
+	
 	// print the hour, minute and second:
 	Serial.print("The UTC time is ");       // UTC is the time at Greenwich Meridian (GMT)
+	Serial.print(nowStruct->tm_year + 1900); 
+	Serial.print(' ');
+	Serial.print(nowStruct->tm_mon + 1);
+	Serial.print(' ');
+	Serial.print(nowStruct->tm_mday);
+	Serial.print(' ');
 	Serial.print((ntp_time_utc % 86400L) / 3600); // print the hour (86400 equals secs per day)
 	Serial.print(':');
 	if (((ntp_time_utc % 3600) / 60) < 10)
@@ -172,6 +307,11 @@ void loop()
 	}
 	Serial.println(ntp_time_utc % 60); // print the second
 	delay(10000);
+	LDateTime.getRtc(&rtc);
+	end_test_rtc = (const long int)rtc;
+	diff_time_test = difftime(end_test_rtc, for_test_rtc);
+	Serial.println(diff_time_test);
+
   /*sendNTPpacket(timeServer); // send an NTP packet to a time server
   // wait to see if a reply is available
   delay(1000);
